@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth, AuthProvider } from '@/hooks/useAuth';
@@ -99,20 +100,24 @@ const ProductDetailsContent = () => {
   }
 
   return (
-    <div className="min-h-screen">
-      <Navbar />
+    <div className="min-h-screen bg-gray-50">
+      <Navbar 
+        onShowAuth={() => setShowAuthModal(true)}
+        onShowSellForm={() => navigate('/dashboard')}
+        onShowProfile={() => {}}
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Button
           variant="ghost"
           onClick={() => navigate('/')}
-          className="mb-6 hover:bg-white/70 backdrop-blur-sm"
+          className="mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to marketplace
         </Button>
 
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 overflow-hidden">
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6">
             {/* Images Section */}
             <div className="space-y-4">

@@ -46,26 +46,17 @@ export const SearchableSelect = ({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-full justify-between text-left font-normal"
+            className="w-full justify-between"
           >
-            <span className="truncate">
-              {selectedItem ? selectedItem.name : placeholder}
-            </span>
+            {selectedItem ? selectedItem.name : placeholder}
             <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent 
-          className="w-full p-0 bg-white border shadow-lg" 
-          align="start"
-          sideOffset={4}
-        >
-          <Command className="w-full">
-            <CommandInput 
-              placeholder={searchPlaceholder} 
-              className="border-none focus:ring-0 h-9" 
-            />
+        <PopoverContent className="w-full p-0 bg-white border shadow-lg z-50 max-h-60 overflow-auto">
+          <Command>
+            <CommandInput placeholder={searchPlaceholder} className="border-none focus:ring-0" />
             <CommandEmpty>No items found.</CommandEmpty>
-            <CommandList className="max-h-48 overflow-y-auto">
+            <CommandList className="max-h-40 overflow-y-auto">
               <CommandGroup>
                 {items.map((item) => (
                   <CommandItem
@@ -75,15 +66,15 @@ export const SearchableSelect = ({
                       onValueChange(item.id);
                       setOpen(false);
                     }}
-                    className="cursor-pointer px-2 py-2 text-sm hover:bg-gray-100 flex items-center"
+                    className="cursor-pointer hover:bg-gray-100"
                   >
                     <Check
                       className={cn(
-                        "mr-2 h-4 w-4 flex-shrink-0",
+                        "mr-2 h-4 w-4",
                         value === item.id ? "opacity-100" : "opacity-0"
                       )}
                     />
-                    <span className="flex-1 truncate">{item.name}</span>
+                    {item.name}
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -102,7 +93,7 @@ export const SearchableSelect = ({
               placeholder={addNewLabel}
               value={newItemValue}
               onChange={(e) => onNewItemValueChange(e.target.value)}
-              className="flex-1 min-w-0"
+              className="flex-1"
             />
             <Button
               type="button"
@@ -113,7 +104,6 @@ export const SearchableSelect = ({
               }}
               disabled={!newItemValue.trim()}
               size="sm"
-              className="shrink-0"
             >
               <Plus className="h-4 w-4 mr-1" />
               Add
@@ -124,4 +114,3 @@ export const SearchableSelect = ({
     </div>
   );
 };
-

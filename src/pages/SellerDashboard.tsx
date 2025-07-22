@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth, AuthProvider } from '@/hooks/useAuth';
 import { Navbar } from '@/components/Navbar';
@@ -115,7 +116,11 @@ const SellerDashboardContent = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navbar />
+        <Navbar 
+          onShowAuth={() => setShowAuthModal(true)}
+          onShowSellForm={() => {}}
+          onShowProfile={() => {}}
+        />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Please sign in to access your dashboard</h1>
@@ -137,7 +142,11 @@ const SellerDashboardContent = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      <Navbar 
+        onShowAuth={() => setShowAuthModal(true)}
+        onShowSellForm={() => {}}
+        onShowProfile={() => {}}
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Seller Dashboard</h1>

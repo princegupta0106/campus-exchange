@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -11,32 +10,34 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { SearchableSelect } from './SearchableSelect';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-interface College {
-  id: string;
-  name: string;
-}
-
 export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(true);
-  const [colleges, setColleges] = useState<College[]>([]);
-  const [selectedCollege, setSelectedCollege] = useState('');
-  const [newCollege, setNewCollege] = useState('');
+  const [colleges, setColleges] = useState<any[]>([]);
+  const [showCustomCollege, setShowCustomCollege] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     fullName: '',
     mobileNumber: '',
+    college: '',
+    customCollege: ''
   });
 
   useEffect(() => {
@@ -66,30 +67,27 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     });
   };
 
+  const handleCollegeChange = (value: string) => {
+    if (value === 'not-listed') {
+      setShowCustomCollege(true);
+      setFormData({ ...formData, college: '' });
+    } else {
+      setShowCustomCollege(false);
+      setFormData({ ...formData, college: value, customCollege: '' });
+    }
+  };
+
   const addNewCollege = async (collegeName: string) => {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('colleges')
-        .insert({ name: collegeName })
-        .select()
-        .single();
-
+        .insert({ name: collegeName });
+      
       if (error) throw error;
-      
-      const newCollegeData = { id: data.id, name: data.name };
-      setColleges(prev => [...prev, newCollegeData]);
-      setSelectedCollege(data.id);
-      setNewCollege('');
-      
-      return data.name;
-    } catch (error: any) {
+      return true;
+    } catch (error) {
       console.error('Error adding college:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to add college",
-        variant: "destructive",
-      });
-      return null;
+      return false;
     }
   };
 
@@ -105,7 +103,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       return;
     }
 
-    if (isSignUp && !selectedCollege && !newCollege) {
+    if (isSignUp && !formData.college && !formData.customCollege) {
       toast({
         title: "Error",
         description: "Please select or enter your college",
@@ -118,23 +116,17 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       setIsLoading(true);
 
       if (isSignUp) {
-        let collegeToUse = '';
+        let collegeToUse = formData.college;
         
-        // If new college is provided, add it to the database first
-        if (newCollege) {
-          const addedCollegeName = await addNewCollege(newCollege);
-          if (addedCollegeName) {
-            collegeToUse = addedCollegeName;
-          } else {
-            return; // Exit if college creation failed
+        // If custom college is provided, add it to the database first
+        if (formData.customCollege) {
+          const added = await addNewCollege(formData.customCollege);
+          if (added) {
+            collegeToUse = formData.customCollege;
           }
-        } else if (selectedCollege) {
-          // Get the selected college name
-          const selectedCollegeData = colleges.find(c => c.id === selectedCollege);
-          collegeToUse = selectedCollegeData?.name || '';
         }
 
-        // Sign up with the college name in metadata
+        // Sign up and automatically sign in
         const { data, error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
@@ -194,7 +186,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {isSignUp ? 'Join Campus Exchange' : 'Welcome Back'}
@@ -232,19 +224,35 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                   required
                 />
               </div>
-              
-              <SearchableSelect
-                items={colleges}
-                value={selectedCollege}
-                onValueChange={setSelectedCollege}
-                placeholder="Select your college"
-                searchPlaceholder="Search colleges..."
-                label="College"
-                onAddNew={addNewCollege}
-                addNewLabel="Enter new college name"
-                newItemValue={newCollege}
-                onNewItemValueChange={setNewCollege}
-              />
+              <div>
+                <Label htmlFor="college">College</Label>
+                <Select onValueChange={handleCollegeChange}>
+                  <SelectTrigger className="max-h-10">
+                    <SelectValue placeholder="Select your college" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {colleges.map((college) => (
+                      <SelectItem key={college.id} value={college.name}>
+                        {college.name}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="not-listed">My college is not listed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {showCustomCollege && (
+                <div>
+                  <Label htmlFor="customCollege">College Name</Label>
+                  <Input
+                    id="customCollege"
+                    name="customCollege"
+                    value={formData.customCollege}
+                    onChange={handleInputChange}
+                    placeholder="Enter your college name"
+                    required
+                  />
+                </div>
+              )}
             </>
           )}
           
@@ -301,4 +309,3 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     </Dialog>
   );
 };
-
