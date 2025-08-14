@@ -112,6 +112,17 @@ const MarketplaceContent = () => {
 
   const fetchColleges = async () => {
     try {
+      // Check if Supabase client is properly configured
+      if (!supabase.supabaseUrl || !supabase.supabaseKey) {
+        console.error('Supabase configuration missing');
+        toast({
+          title: "Configuration Error",
+          description: "Please connect to Supabase to load colleges",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { data, error } = await supabase
         .from('colleges')
         .select('*')
@@ -121,6 +132,11 @@ const MarketplaceContent = () => {
       setColleges(data || []);
     } catch (error) {
       console.error('Error fetching colleges:', error);
+      toast({
+        title: "Connection Error",
+        description: "Unable to load colleges. Please check your connection and try again.",
+        variant: "destructive",
+      });
     }
   };
 
